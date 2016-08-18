@@ -1,0 +1,31 @@
+{
+	"manifest_version": 2,
+
+	"name": "Binge-Watcher",
+	"description": "Application for binge-watching on streaming sites. Only tested on 'kissanime.com'.",
+	"version": "1.0",
+	"background": {
+		"scripts": ["background.js"]
+	},
+
+	"permissions": [
+        "tabs", 
+        "webNavigation",
+        "storage",
+        "contextMenus",
+        "activeTab"
+    ],
+	"browser_action": {
+		"default_icon": "/Media/icon.png",
+		"default_title": "Binge-Watcher!",
+        "default_popup": "popup.html"
+	},
+    
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content_script.js"],
+            "run_at": "document_end"
+        }
+    ]
+}
