@@ -3,6 +3,7 @@ var first = true;
 var latest_title;
 var latestPath;
 var nextUrl;
+var video;
 
 function getViewport() {
 
@@ -93,15 +94,28 @@ function querySelectorAllWithEq(selector, document) {
   return [baseElement];
 };
 
+
+function onScrollHandler(event) {
+    var newVolume = video.volume - (event.deltaY / 1000); 
+    if (event.deltaY > 0) { //scroll down
+        video.volume = newVolume < 0 ? 0 : newVolume;
+    } else { //scrollUp
+        video.volume = newVolume > 1 ? 1 : newVolume;
+    }
+};
+
 function videoHandler(){
     if (document.readyState === "complete") {
         console.log("Document ready in videohandler.");
         var videos = document.getElementsByTagName("video");
-        var video = videos[0];
+        video = videos[0];
         if (!video) {
             console.log("No HTML5 Player found!");
             return;
         }
+        video.volume = 1;
+        video.addEventListener("wheel", onScrollHandler);
+        
         storeOriginalSize(video);
         if (first) {
             first = false;
@@ -272,3 +286,5 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
     return true;
 });
+
+document.addEventListener("DOMContentLoaded", videoHandler);

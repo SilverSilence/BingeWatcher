@@ -3,7 +3,7 @@
 
 	"name": "Binge-Watcher",
 	"description": "Application for binge-watching on streaming sites. Only tested on 'kissanime.com'.",
-	"version": "1.0",
+	"version": "0.0.2",
 	"background": {
 		"scripts": ["background.js"]
 	},
