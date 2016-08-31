@@ -5,7 +5,6 @@ var latestUrl;
 var currentTabId;
 var nextUrl;
 var requested = false;
-var videoInitiated = false;
 
 function initiateVideoHandler(id) {
     videoInitiated = true;
@@ -85,7 +84,6 @@ function playNextHandler(link) {
         if (chrome.runtime.lastError) {
             console.log("Failed to play next Url: " + nextUrl + ".\n" + chrome.runtime.lastError.message);
         } else {
-            videoInitiated = false;
             nextUrl = link;
             console.log("Succesfully updated tab to 'nextUrl':" + nextUrl);
             pageUrl = nextUrl;
@@ -93,7 +91,7 @@ function playNextHandler(link) {
     });
 }
 
-function checkLinkForTitle(tabId) {
+function checkLinkForTitle(tab) {
     console.log("Check if page is known.");
     chrome.storage.sync.get(null, function (items) {
         if (chrome.runtime.lastError) {
@@ -102,11 +100,11 @@ function checkLinkForTitle(tabId) {
             console.log("Successfully retrieved items.");
             for (var key in items) {
                 if (items.hasOwnProperty(key)) {
-                    if (items[key]["pageUrl"] === latestUrl) {
+                    if (items[key]["pageUrl"] === tab.url) {
                         latestUrl = items[key]["pageUrl"];
                         latest_title = key;
                         console.log("Found matching page. Title is: " + latest_title);
-                        initiateVideo(tabId);
+                        currentTabId = tab.id;
                         return;
                     }
                 }
@@ -128,12 +126,13 @@ function loadTitleInTab(link) {
 }
 
 function initiateVideo(tabId) {
-    console.log("In 'initiateVideo'. Been initiated: " + videoInitiated);
-    if (videoInitiated) return;
+    console.log("In 'initiateVideo'.");
     initiateVideoHandler(tabId);
 }
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    checkLinkForTitle(tab);
+    
     if (tabId != currentTabId) return;
 
     console.log("Registered Tab Update: " + changeInfo.status);

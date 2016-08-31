@@ -96,6 +96,8 @@ function querySelectorAllWithEq(selector, document) {
 
 
 function onScrollHandler(event) {
+    if (event.target != video) return;
+    
     var newVolume = video.volume - (event.deltaY / 1000); 
     if (event.deltaY > 0) { //scroll down
         video.volume = newVolume < 0 ? 0 : newVolume;
@@ -287,4 +289,4 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true;
 });
 
-document.addEventListener("DOMContentLoaded", videoHandler);
+//document.addEventListener("DOMContentLoaded", videoHandler);
