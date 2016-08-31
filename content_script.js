@@ -96,14 +96,26 @@ function querySelectorAllWithEq(selector, document) {
 
 
 function onScrollHandler(event) {
-    if (event.target != video) return;
-    
-    var newVolume = video.volume - (event.deltaY / 1000); 
-    if (event.deltaY > 0) { //scroll down
-        video.volume = newVolume < 0 ? 0 : newVolume;
-    } else { //scrollUp
-        video.volume = newVolume > 1 ? 1 : newVolume;
+    if (event.target == video) {
+        var newVolume = video.volume - (event.deltaY / 1000); 
+        if (event.deltaY > 0) { //scroll down
+            video.volume = newVolume < 0 ? 0 : newVolume;
+        } else { //scrollUp
+            video.volume = newVolume > 1 ? 1 : newVolume;
+        }
     }
+};
+
+function disableScrolling(){
+    var x=window.scrollX;
+    var y=window.scrollY;
+    window.onscroll=function(evt){
+        window.scrollTo(x, y);
+    };
+};
+
+function enableScrolling(){
+    window.onscroll=function(){};
 };
 
 function videoHandler(){
@@ -116,12 +128,13 @@ function videoHandler(){
             return;
         }
         video.volume = 1;
-        video.addEventListener("wheel", onScrollHandler);
         
+        disableScrolling();
         storeOriginalSize(video);
         if (first) {
             first = false;
             console.log("Adding listeners in videohandler.");
+            video.addEventListener("wheel", onScrollHandler);
             video.addEventListener("canplay", function() { 
                 setNewSize(video)
                 requestFullScreen(video); 
@@ -131,9 +144,13 @@ function videoHandler(){
                 videoEndHandler(video)
             });
             video.addEventListener("pause", function() {
+                video.removeEventListener("wheel", onScrollHandler);
+                enableScrolling();
                 restoreSize(video);
             });
             video.addEventListener("play", function() {
+                video.addEventListener("wheel", onScrollHandler);
+                disableScrolling();
                 setNewSize(video);
             })
         } else {
@@ -141,7 +158,7 @@ function videoHandler(){
         }
         if(!video.paused) {
             setNewSize(video);
-            requestFullScreen(video); 
+            requestFullScreen(video);
         } else {
             video.load();
             video.play();

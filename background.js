@@ -131,12 +131,10 @@ function initiateVideo(tabId) {
 }
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-    checkLinkForTitle(tab);
-    
-    if (tabId != currentTabId) return;
-
     console.log("Registered Tab Update: " + changeInfo.status);
     if (changeInfo.status === "complete") {
+        checkLinkForTitle(tab);
+        if (tabId != currentTabId) return;
         initiateVideo(tabId);
     }
 });
