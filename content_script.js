@@ -118,6 +118,11 @@ function enableScrolling(){
     window.onscroll=function(){};
 };
 
+function selectQuality() {
+    var selectQuality = document.getElementById("selectQuality");
+    selectQuality.options.selectedIndex = 0;
+}
+
 function videoHandler(){
     if (document.readyState === "complete") {
         console.log("Document ready in videohandler.");
@@ -127,8 +132,8 @@ function videoHandler(){
             console.log("No HTML5 Player found!");
             return;
         }
-        video.volume = 1;
-        
+        video.volume = 0.5;
+        selectQuality();
         disableScrolling();
         storeOriginalSize(video);
         if (first) {
