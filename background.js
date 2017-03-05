@@ -58,7 +58,8 @@ function setNext(info, tab) {
 }
 
 function setEntry(info, tab) {
-    var title = info.selectionText;
+    var title = prompt("Please enter the name of the new title.");
+    latest_title = title;
     var pageUrl = info.pageUrl;
     var toSave = {};
     currentTabId = tab.id;
@@ -100,6 +101,7 @@ function checkLinkForTitle(tab) {
             console.log("Successfully retrieved items.");
             for (var key in items) {
                 if (items.hasOwnProperty(key)) {
+                    console.log("Checking page:", items[key]["pageUrl"]);
                     if (items[key]["pageUrl"] === tab.url) {
                         latestUrl = items[key]["pageUrl"];
                         latest_title = key;
@@ -180,6 +182,6 @@ chrome.contextMenus.create({
 chrome.contextMenus.create({
     id: "New Entry",
     title: "Title of new entry",
-    contexts: ["selection"],
+    contexts: ["all"],
     onclick: setEntry
 });

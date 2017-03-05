@@ -4,6 +4,7 @@ var latest_title;
 var latestPath;
 var nextUrl;
 var video;
+var expanded = false;
 
 function getViewport() {
 
@@ -135,13 +136,13 @@ function videoHandler(){
         video.volume = 0.5;
         selectQuality();
         disableScrolling();
-        storeOriginalSize(video);
+        storeOriginalSize();
         if (first) {
             first = false;
             console.log("Adding listeners in videohandler.");
             video.addEventListener("wheel", onScrollHandler);
             video.addEventListener("canplay", function() { 
-                setNewSize(video)
+                setNewSize();
                 requestFullScreen(video); 
                 video.play(); 
             });
@@ -157,7 +158,7 @@ function videoHandler(){
                 video.addEventListener("wheel", onScrollHandler);
                 disableScrolling();
                 setNewSize(video);
-            })
+            });
         } else {
             console.log("Listeners should already be there.");
         }
@@ -174,6 +175,9 @@ function videoHandler(){
 }
 
 function sendPlayNextRequest() {
+    if (!nextUrl) {
+        var nextUrl = document.getElementById("btnNext").parentNode.href;
+    }
     console.log("Requesting 'playNext' with URL: " + nextUrl);
     chrome.runtime.sendMessage({ action : "playNext", link: nextUrl}, function(response) {
         if (chrome.runtime.lastError) {
@@ -209,11 +213,12 @@ function checkLinkForTitle() {
     });
 }
 
-function videoEndHandler(video) {
+function videoEndHandler() {
     console.log("Detected Video-End Event.");
-    restoreSize(video);
+    restoreSize();
     if (latest_title) {
-        storeAndSendRequest(latestPath);
+        var aTag = document.getElementById("btnNext").parentNode;
+        storeAndSendRequest(aTag);
     } else {
         checkLinkForTitle();
     }
@@ -229,65 +234,66 @@ function requestFullScreen(elem) {
     }
 }
 
-function restoreSize(video) {
+function restoreSize() {
     video.style.width = original_size.width;
     video.style.height = original_size.height; 
     video.style.position = original_size.position;
     video.style.zIndex = original_size.zIndex;
+    expanded = false;
 }
 
-function storeOriginalSize(video) {
+function storeOriginalSize() {
     original_size.width         = video.style.width;
     original_size.height        = video.style.height;
     original_size.position      = video.style.position;
     original_size.zIndex        = video.style.zIndex;
 }
 
-function setNewSize(video) {
+function setNewSize() {
     video.style.position ="fixed";
     video.style.zIndex = "1000";
     video.style.width = "100%";
     video.style.height = "100%";
+    expanded = true;
 }
 
-function workaround(video) {
-    storeOriginalSize(video);
-    setNewSize(video);
+function workaround() {
+    storeOriginalSize();
+    setNewSize();
 }
 
 function getPathHandler(link) {
     var links = document.getElementsByTagName("a");
-        for(var i = 0; i < links.length; i++) {
-            if (links[i]["href"] === link) {
-                link = links[i];
-                break;
-            }
+    for(var i = 0; i < links.length; i++) {
+        if (links[i]["href"] === link) {
+            link = links[i];
+            break;
         }
-        return getDomPath(link);
+    }
+    return getDomPath(link);
 }
 
-function storeAndSendRequest(path){
-    var title = latest_title;
-    
+function storeAndSendRequest(){
+    var title = latest_title;  
     chrome.storage.sync.get(title, function(item) {
         if(chrome.runtime.latestError) {
             console.log("Error in getting item to set 'nextUrl':" + chrome.runtime.lastError.message);
         } else {
             console.log("Succesfully retrieved item to store 'nextUrl'.");
             var toSave = item;
-            var linkElem = querySelectorAllWithEq(item[title]["pathToNext"].toString().replace(/,/g, " "), document)[0];
-            toSave[title]["pageUrl"] = linkElem["href"];
-            nextUrl = linkElem["href"];
+            var aTag = document.getElementById("btnNext").parentNode;
+            toSave[title]["pageUrl"] = aTag["href"];
+            nextUrl = aTag["href"];
             chrome.storage.sync.set(toSave, function() {
                 if(chrome.runtime.lastError) {
                     console.log("Update failed for 'nextUrl': " + chrome.runtime.lastError.message);
                 } else {
-                    console.log("Successfully updated 'nextUrl' to: " + linkElem["href"]);
+                    console.log("Successfully updated 'nextUrl' to: " + aTag["href"]);
                     sendPlayNextRequest();
                 }
             })
         }
-    })
+    });
 }
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -311,4 +317,31 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true;
 });
 
-//document.addEventListener("DOMContentLoaded", videoHandler);
+function arrowEventHandler(event) {
+    console.log("keypress", event);
+    switch(event.key) {
+        case 'j': //left
+            if (expanded) {
+                restoreSize();
+            } else {
+                setNewSize();
+            }
+            break;
+        case 'i': //up
+            var newVolume = video.volume + 0.1; 
+            video.volume = newVolume > 1 ? 1 : newVolume;
+            break;
+        case 'l': //right
+            videoEndHandler();
+//            sendPlayNextRequest();
+            break;
+        case 'k': //down
+            var newVolume = video.volume - 0.1; 
+            video.volume = newVolume < 0 ? 0 : newVolume;
+            break;
+        default:
+            break;
+    }
+}
+
+document.onkeypress = arrowEventHandler;
