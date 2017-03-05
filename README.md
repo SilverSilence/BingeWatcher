@@ -1,6 +1,12 @@
 #BingeWatcher
 This plugin is meant for the website 'www.kissanime.ru' and automatically loads the next episode and increases the video player size.
 
+##How to install
+Download zip-file.
+Go to your browser's extenstion settings.
+Enable developer mode.
+Install by zip file / Load zip file.
+
 ##How to use
 On right-click, you should see an option "Title of New Entry". An Input-Box appears where you can type the show's name. It is stored along with the current URL which is seen as the "last unseen episode"; therefore make sure you're on that page when entering a new series.
 
