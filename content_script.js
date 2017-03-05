@@ -323,8 +323,10 @@ function arrowEventHandler(event) {
         case 'j': //left
             if (expanded) {
                 restoreSize();
+                enableScrolling();
             } else {
                 setNewSize();
+                disableScrolling();
             }
             break;
         case 'i': //up
